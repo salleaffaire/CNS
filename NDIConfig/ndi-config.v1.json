@@ -1,0 +1,51 @@
+{
+  "ndi": {
+    "adaptors": {
+      "allowed": []
+    },
+    "groups": {
+      "recv": "\"public\"",
+      "send": "\"public\""
+    },
+    "machinename": "",
+    "multicast": {
+      "recv": {
+        "enable": true,
+        "subnets": ""
+      },
+      "send": {
+        "enable": false,
+        "netmask": "255.255.0.0",
+        "netprefix": "239.255.0.0"
+      }
+    },
+    "networks": {
+      "discovery": "",
+      "ips": "172.28.144.1"
+    },
+    "rudp": {
+      "recv": {
+        "enable": true
+      },
+      "send": {
+        "enable": true
+      }
+    },
+    "tcp": {
+      "recv": {
+        "enable": true
+      },
+      "send": {
+        "enable": true
+      }
+    },
+    "unicast": {
+      "recv": {
+        "enable": true
+      },
+      "send": {
+        "enable": true
+      }
+    }
+  }
+}
