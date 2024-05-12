@@ -91,8 +91,6 @@ class Source {
       NDIlib_video_frame_v2_t video_frame;
       NDIlib_audio_frame_v2_t audio_frame;
 
-      Element<NDIlib_video_frame_v2_t> r;
-
       // Set the deleter
       mBuffer.SetDeleter([pNDI_recv](NDIlib_video_frame_v2_t* frame) {
         NDIlib_recv_free_video_v2(pNDI_recv, frame);
@@ -107,7 +105,7 @@ class Source {
         // Video data
         case NDIlib_frame_type_video:
           OutputVideoFrame(&video_frame);
-          r = mBuffer.Put(video_frame, video_frame.timestamp);
+          mBuffer.Put(video_frame, video_frame.timestamp);
           mBuffer.Output();
           break;
 
