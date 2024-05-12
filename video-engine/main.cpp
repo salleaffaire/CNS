@@ -59,55 +59,16 @@ int main() {
     return -1;
   }
 
-  // We now have at least one source, so we create a receiver to look at it.
-  NDIlib_recv_instance_t pNDI_recv = NDIlib_recv_create_v3();
-  if (!pNDI_recv) return 0;
+  Source videoSource;
+  videoSource.Init((NDIlib_source_t*)&p_sources[selectedSourceIndex]);
+  videoSource.Start();
 
-  // Connect to our sources
-  NDIlib_recv_connect(pNDI_recv, p_sources + 0);
+  // We need to stop here to prevent the program from exiting
+  videoSource.Wait();
 
   // Destroy the NDI finder. We needed to have access to the pointers to
   // p_sources[0]
   NDIlib_find_destroy(pNDI_find);
-
-  // Run for one minute
-  using namespace std::chrono;
-  for (const auto start = high_resolution_clock::now();
-       high_resolution_clock::now() - start < minutes(5);) {  // The descriptors
-    NDIlib_video_frame_v2_t video_frame;
-    NDIlib_audio_frame_v2_t audio_frame;
-
-    switch (NDIlib_recv_capture_v2(pNDI_recv, &video_frame, &audio_frame,
-                                   nullptr, 5000)) {  // No data
-      case NDIlib_frame_type_none:
-        printf("No data received.\n");
-        break;
-
-      // Video data
-      case NDIlib_frame_type_video:
-        printf(
-            "Video data received (%dx%d) frame rate %f fps | tc %ld | ts "
-            "%ld | ts - tc %ld.\n",
-            video_frame.xres, video_frame.yres,
-            (double)video_frame.frame_rate_N / (double)video_frame.frame_rate_D,
-            video_frame.timecode, video_frame.timestamp,
-            video_frame.timestamp - video_frame.timecode);
-        printf("   Unix timecode: %ld\n", video_frame.timecode / 10000000);
-        printf("   Unix timecode (remainder): %ld\n",
-               video_frame.timecode % 10000000);
-        NDIlib_recv_free_video_v2(pNDI_recv, &video_frame);
-        break;
-
-      // Audio data
-      case NDIlib_frame_type_audio:
-        printf("Audio data received (%d samples).\n", audio_frame.no_samples);
-        NDIlib_recv_free_audio_v2(pNDI_recv, &audio_frame);
-        break;
-    }
-  }
-
-  // Destroy the receiver
-  NDIlib_recv_destroy(pNDI_recv);
 
   // Not required, but nice
   NDIlib_destroy();
