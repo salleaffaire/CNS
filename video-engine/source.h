@@ -3,6 +3,7 @@
 
 // #include <condition_variable>
 #include <cstdlib>
+#include <iostream>
 #include <string>
 #include <thread>
 
@@ -41,20 +42,24 @@ class Source {
   // The source
   NDIlib_source_t* mSource;
 
+  // Write OuputVideoFrame and OutputAudioFrame functions using std::cout
+
   void OutputVideoFrame(NDIlib_video_frame_v2_t* frame) {
     // Output the frame
-    printf(
-        "Video data received (%dx%d) frame rate %f fps | tc %ld | ts %ld | ts "
-        "- tc %ld.\n",
-        frame->xres, frame->yres,
-        (double)frame->frame_rate_N / (double)frame->frame_rate_D,
-        frame->timecode, frame->timestamp, frame->timestamp - frame->timecode);
-    printf("   Unix timecode: %ld\n", frame->timecode / 10000000);
-    printf("   Unix timecode (remainder): %ld\n", frame->timecode % 10000000);
+    std::cout << "Video data received (" << frame->xres << "x" << frame->yres
+              << ") frame rate "
+              << (double)frame->frame_rate_N / (double)frame->frame_rate_D
+              << " fps | tc " << frame->timecode << " | ts " << frame->timestamp
+              << " | ts - tc " << frame->timestamp - frame->timecode << "."
+              << std::endl;
+    std::cout << "   Unix timecode: " << frame->timecode / 10000000
+              << std::endl;
+    std::cout << "   Unix timecode (remainder): " << frame->timecode % 10000000
+              << std::endl;
   }
-
   void OutputAudioFrame(NDIlib_audio_frame_v2_t* frame) {
-    printf("Audio data received (%d samples).\n", frame->no_samples);
+    std::cout << "Audio data received (" << frame->no_samples << " samples)."
+              << std::endl;
   }
 
   void Run() {
@@ -103,6 +108,7 @@ class Source {
         case NDIlib_frame_type_video:
           OutputVideoFrame(&video_frame);
           r = mBuffer.Put(video_frame, video_frame.timestamp);
+          mBuffer.Output();
           break;
 
         // Audio data

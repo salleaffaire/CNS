@@ -114,6 +114,22 @@ class TimedCircularBuffer {
     return mBuffer[index % mSize].mItem;
   }
 
+  void Output() {
+    std::unique_lock<std::mutex> lock(mMutex);
+    for (int i = 0; i < mSize; i++) {
+      if (mBuffer[i].mIsSet) {
+        if (i == mCurrentWrite % mSize) {
+          std::cout << "X";
+        } else {
+          std::cout << "x";
+        }
+      } else {
+        std::cout << "O";
+      }
+    }
+    std::cout << std::endl;
+  }
+
  private:
   Element<T>* mBuffer;
   int mSize;
