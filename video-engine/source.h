@@ -34,9 +34,9 @@ class Source {
 
   // Getters and setters
   // ---------------------------------------------------------------
-  NDIlib_video_frame_v2_t GetVideoFrameAtTime(uint64_t timestamp) {
-    // Set the threshold to be 16ms but in 100ns intervals
-    return mBuffer.Get(timestamp, 16 * 10000);
+  NDIlib_video_frame_v2_t GetVideoFrameAtTime(uint64_t timestamp,
+                                              uint64_t threshold) {
+    return mBuffer.Get(timestamp, threshold);
   }
 
   // --------------------------------------------- Getters and setters
