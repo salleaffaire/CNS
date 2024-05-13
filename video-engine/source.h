@@ -14,11 +14,10 @@ class Source {
  public:
   Source() : mSource(nullptr), mBuffer(8) {}
   virtual ~Source() {}
-  void Init(NDIlib_source_t* source) {
-    mSource = source;
-    // mThread = std::thread(&Source::Run, this);
-  }
+  void Init(NDIlib_source_t* source) { mSource = source; }
 
+  // Control API
+  // ------------------------------------------------------------------
   bool isRunning() { return mIsRunning; }
 
   void Start(int runForIterations = 10) {
@@ -31,6 +30,16 @@ class Source {
   }
 
   void Wait() { mThread.join(); }
+  // ----------------------------------------------------- Control API
+
+  // Getters and setters
+  // ---------------------------------------------------------------
+  NDIlib_video_frame_v2_t GetVideoFrameAtTime(uint64_t timestamp) {
+    // Set the threshold to be 16ms but in 100ns intervals
+    return mBuffer.Get(timestamp, 16 * 10000);
+  }
+
+  // --------------------------------------------- Getters and setters
 
  private:
   std::string mSourceName;
@@ -57,6 +66,11 @@ class Source {
     std::cout << "   Unix timecode (remainder): " << frame->timecode % 10000000
               << std::endl;
   }
+
+  void OuputVideoFrameTimestamp(NDIlib_video_frame_v2_t* frame) {
+    std::cout << "Unix timecode           : " << frame->timecode << std::endl;
+  }
+
   void OutputAudioFrame(NDIlib_audio_frame_v2_t* frame) {
     std::cout << "Audio data received (" << frame->no_samples << " samples)."
               << std::endl;
@@ -99,19 +113,19 @@ class Source {
       switch (NDIlib_recv_capture_v2(pNDI_recv, &video_frame, &audio_frame,
                                      nullptr, 5000)) {  // No data
         case NDIlib_frame_type_none:
-          printf("No data received.\n");
+          // printf("No data received.\n");
           break;
 
         // Video data
         case NDIlib_frame_type_video:
-          OutputVideoFrame(&video_frame);
+          // OutputVideoFrame(&video_frame);
+          // OuputVideoFrameTimestamp(&video_frame);
           mBuffer.Put(video_frame, video_frame.timestamp);
-          mBuffer.Output();
           break;
 
         // Audio data
         case NDIlib_frame_type_audio:
-          OutputAudioFrame(&audio_frame);
+          // OutputAudioFrame(&audio_frame);
           NDIlib_recv_free_audio_v2(pNDI_recv, &audio_frame);
           break;
       }

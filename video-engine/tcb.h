@@ -109,12 +109,29 @@ class TimedCircularBuffer {
     }
     std::unique_lock<std::mutex> lock(mMutex);
 
+    // If ReadIndex is smaller than WriteIndex - 8, reset the read index
+    if (mCurrentRead < mCurrentWrite - mSize) {
+      mCurrentRead = mCurrentWrite - (mSize / 2);
+    }
+
     // Find the index of the item within the threshold of the timestamp
     // starting from the current read index
     int index = mCurrentRead;
     while (index < mCurrentWrite) {
-      if (std::abs(mBuffer[index % mSize].mTimestamp - timestamp) >=
-          threshold) {
+      std::cout << "mCurrentWrite: " << mCurrentWrite
+                << " | mCurrentRead: " << mCurrentRead << " | index: " << index
+                << std::endl;
+      // std::cout << "Buffer Timestamp: " << mBuffer[index % mSize].mTimestamp
+      //           << std::endl;
+      // std::cout << "Timestamp       : " << timestamp << std::endl;
+      uint64_t diff = std::abs(int64_t(mBuffer[index % mSize].mTimestamp) -
+                               int64_t(timestamp));
+
+      std::cout << "Diff: " << diff << " | Threshold: " << threshold
+                << std::endl;
+      if (diff <= threshold) {
+        mCurrentRead = index;
+        std::cout << "ReadIndex: " << mCurrentRead << std::endl;
         break;
       }
       index++;

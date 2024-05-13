@@ -63,6 +63,27 @@ int main() {
   videoSource.Init((NDIlib_source_t*)&p_sources[selectedSourceIndex]);
   videoSource.Start();
 
+  // Simulate a renderering loop
+  // Frame per second
+  const double fps = 60;
+  const double frameDuration = 1.0 * 1000 / fps;    // in milliseconds
+  const int frameDurationInt = (int)frameDuration;  // in milliseconds
+  while (1) {
+    if (videoSource.isRunning()) {
+      // Output current system timestamp (now)
+      uint64_t now =
+          std::chrono::system_clock::now().time_since_epoch().count();
+
+      // We want to be 2 frame behind the current frame
+      now -= (frameDurationInt * 1000000);
+      // The NDI timestamp is in 100ns intervals
+      // The now timestamp is in ns intervals
+      std::cout << "Current system timestamp: " << now / 100 << std::endl;
+      videoSource.GetVideoFrameAtTime(now / 100);
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(frameDurationInt));
+  }
+
   // We need to stop here to prevent the program from exiting
   videoSource.Wait();
 
