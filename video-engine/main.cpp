@@ -4,6 +4,7 @@
 #include <string>
 
 #include "Processing.NDI.Lib.h"
+#include "renderer.h"
 #include "source.h"
 
 int main() {
@@ -63,6 +64,10 @@ int main() {
   videoSource.Init((NDIlib_source_t*)&p_sources[selectedSourceIndex]);
   videoSource.Start();
 
+  Renderer renderer;
+  renderer.AddSource(&videoSource);
+  renderer.Start();
+
   // Simulate a renderering loop
   // Frame per second
   const double fpsOut = 120;
@@ -73,28 +78,43 @@ int main() {
   const double frameDurationIn = 1.0 * 1000 / fpsIn;    // in milliseconds
   const int frameDurationInInt = (int)frameDurationIn;  // in milliseconds
 
-  while (1) {
-    if (videoSource.isRunning()) {
-      // Output current system timestamp (now)
-      uint64_t now =
-          std::chrono::system_clock::now().time_since_epoch().count();
+  // while (1) {
+  // }
 
-      // We want to be 2 frame behind the current frame
-      now -= (frameDurationInInt * 1000000);
-      // The NDI timestamp is in 100ns intervals
-      // The now timestamp is in ns intervals
-      std::cout << "Current system timestamp: " << now / 100 << std::endl;
+  // while (1) {
+  //   if (videoSource.isRunning()) {
+  //     // Output current system timestamp (now)
+  //     uint64_t now =
+  //         std::chrono::system_clock::now().time_since_epoch().count();
 
-      // The 2 parameters are
-      // 1. The timestamp in 100ns intervals
-      // 2. The threshold in 100ns intervals
-      videoSource.GetVideoFrameAtTime(now / 100, frameDurationInInt * 10000);
-    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(frameDurationOutInt));
-  }
+  //     // We want to be 2 frame behind the current frame
+  //     now -= (frameDurationInInt * 1000000);
+  //     // The NDI timestamp is in 100ns intervals
+  //     // The now timestamp is in ns intervals
+  //     std::cout << "Current system timestamp: " << now / 100 << std::endl;
+
+  //     // The 2 parameters are
+  //     // 1. The timestamp in 100ns intervals
+  //     // 2. The threshold in 100ns intervals
+  //     videoSource.GetVideoFrameAtTime(now / 100, frameDurationInInt * 10000);
+  //   }
+  //   std::this_thread::sleep_for(std::chrono::milliseconds(frameDurationOutInt));
+  // }
 
   // We need to stop here to prevent the program from exiting
-  videoSource.Wait();
+  // videoSource.Wait();
+
+  // Ask for user input to stop the program, stop if the user enters 'q'
+  char c;
+  while (1) {
+    std::cin >> c;
+    if (c == 'q') {
+      break;
+    }
+  }
+
+  // Stop the renderer
+  renderer.Stop();
 
   // Destroy the NDI finder. We needed to have access to the pointers to
   // p_sources[0]

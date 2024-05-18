@@ -4,6 +4,7 @@
 
 ```bash
 sudo apt-get install libavahi-client3
+sudo apt install libncurses5-dev
 ```
 
 ## NDI Config file
