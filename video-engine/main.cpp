@@ -44,7 +44,7 @@ int main() {
   int sourceIndex = 0;
   for (std::list<std::string>::iterator it = NDISources.begin();
        it != NDISources.end(); it++) {
-    std::cout << sourceIndex << " : " << *it << std::endl;
+    std::cout << sourceIndex++ << " : " << *it << std::endl;
   }
 
   // Select a source index
@@ -64,45 +64,9 @@ int main() {
   videoSource.Init((NDIlib_source_t*)&p_sources[selectedSourceIndex]);
   videoSource.Start();
 
-  Renderer renderer;
+  Renderer renderer(60, 1);
   renderer.AddSource(&videoSource);
   renderer.Start();
-
-  // Simulate a renderering loop
-  // Frame per second
-  const double fpsOut = 120;
-  const double frameDurationOut = 1.0 * 1000 / fpsOut;    // in milliseconds
-  const int frameDurationOutInt = (int)frameDurationOut;  // in milliseconds
-
-  const double fpsIn = 60;
-  const double frameDurationIn = 1.0 * 1000 / fpsIn;    // in milliseconds
-  const int frameDurationInInt = (int)frameDurationIn;  // in milliseconds
-
-  // while (1) {
-  // }
-
-  // while (1) {
-  //   if (videoSource.isRunning()) {
-  //     // Output current system timestamp (now)
-  //     uint64_t now =
-  //         std::chrono::system_clock::now().time_since_epoch().count();
-
-  //     // We want to be 2 frame behind the current frame
-  //     now -= (frameDurationInInt * 1000000);
-  //     // The NDI timestamp is in 100ns intervals
-  //     // The now timestamp is in ns intervals
-  //     std::cout << "Current system timestamp: " << now / 100 << std::endl;
-
-  //     // The 2 parameters are
-  //     // 1. The timestamp in 100ns intervals
-  //     // 2. The threshold in 100ns intervals
-  //     videoSource.GetVideoFrameAtTime(now / 100, frameDurationInInt * 10000);
-  //   }
-  //   std::this_thread::sleep_for(std::chrono::milliseconds(frameDurationOutInt));
-  // }
-
-  // We need to stop here to prevent the program from exiting
-  // videoSource.Wait();
 
   // Ask for user input to stop the program, stop if the user enters 'q'
   char c;

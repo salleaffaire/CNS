@@ -12,7 +12,8 @@
 
 class Source {
  public:
-  Source() : mSource(nullptr), mBuffer(8) {}
+  Source()
+      : mSource(nullptr), mBuffer(8), mSourceFRateDen(0), mSourceFRateNum(0) {}
   virtual ~Source() {}
   void Init(NDIlib_source_t* source) { mSource = source; }
 
@@ -34,6 +35,12 @@ class Source {
 
   // Getters and setters
   // ---------------------------------------------------------------
+  std::string GetSourceName() { return mSourceName; }
+
+  int GetSourceFRateDen() { return mSourceFRateDen; }
+
+  int GetSourceFRateNum() { return mSourceFRateNum; }
+
   NDIlib_video_frame_v2_t GetVideoFrameAtTime(uint64_t timestamp,
                                               uint64_t threshold) {
     return mBuffer.Get(timestamp, threshold);
@@ -43,6 +50,9 @@ class Source {
 
  private:
   std::string mSourceName;
+
+  int mSourceFRateDen, mSourceFRateNum;
+
   std::thread mThread;
   bool mIsRunning;
 
@@ -120,6 +130,13 @@ class Source {
         case NDIlib_frame_type_video:
           // OutputVideoFrame(&video_frame);
           // OuputVideoFrameTimestamp(&video_frame);
+          // Update the source frame rate
+          mSourceFRateDen = video_frame.frame_rate_D;
+          mSourceFRateNum = video_frame.frame_rate_N;
+          std::cout << "Source frame rate: "
+                    << (double)mSourceFRateNum / (double)mSourceFRateDen
+                    << std::endl;
+          // Put the video frame in the buffer
           mBuffer.Put(video_frame, video_frame.timestamp);
           break;
 

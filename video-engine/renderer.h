@@ -9,7 +9,10 @@
 
 class Renderer {
  public:
-  Renderer() : mIsRunning(false) {}
+  Renderer(int rendererFRateNum, int rendererFRateDen)
+      : mIsRunning(false),
+        mRendererFRateNum(rendererFRateNum),
+        mRendererFRateDen(rendererFRateDen) {}
   virtual ~Renderer() {}
 
   void Start() {
@@ -26,10 +29,14 @@ class Renderer {
 
  private:
   std::thread mThread;
+
+  int mRendererFRateDen, mRendererFRateNum;
+
   bool mIsRunning;
 
   std::vector<Source*> mSources;
 
+  // Assume only one source for now
   void Run() {
     // If there is one source then we can start the rendering loop
     if (mSources.size() == 0) {
@@ -40,20 +47,27 @@ class Renderer {
 
     // Simulate a renderering loop
     // Frame per second
-    const double fpsOut = 120;
+    const double fpsOut = mRendererFRateNum / mRendererFRateDen;
     const double frameDurationOut = 1.0 * 1000 / fpsOut;    // in milliseconds
     const int frameDurationOutInt = (int)frameDurationOut;  // in milliseconds
 
-    const double fpsIn = 60;
-    const double frameDurationIn = 1.0 * 1000 / fpsIn;    // in milliseconds
-    const int frameDurationInInt = (int)frameDurationIn;  // in milliseconds
-
     while (mIsRunning) {
+      if (mSources[0]->GetSourceFRateDen() == 0) {
+        std::cout << "Source frame rate not set" << std::endl;
+        continue;
+      }
+      // Get the input frame rate from the source
+      const double fpsIn =
+          mSources[0]->GetSourceFRateNum() / mSources[0]->GetSourceFRateDen();
+      const double frameDurationIn = 1.0 * 1000 / fpsIn;    // in milliseconds
+      const int frameDurationInInt = (int)frameDurationIn;  // in milliseconds
+
       // Output current system timestamp (now)
       uint64_t now =
           std::chrono::system_clock::now().time_since_epoch().count();
 
-      // We want to be 2 frame behind the current frame
+      // We want to be 2 frame behind the current frame in term of input
+      // frames
       now -= (frameDurationInInt * 1000000);
       // The NDI timestamp is in 100ns intervals
       // The now timestamp is in ns intervals
