@@ -52,38 +52,42 @@ class Renderer {
     const int frameDurationOutInt = (int)frameDurationOut;  // in milliseconds
 
     while (mIsRunning) {
-      if (mSources[0]->GetSourceFRateDen() == 0) {
-        std::cout << "Source frame rate not set" << std::endl;
-        continue;
+      for (int i = 0; i < mSources.size(); i++) {
+        if (mSources[i]->GetSourceFRateDen() == 0) {
+          std::cout << "Source frame rate not set" << std::endl;
+          continue;
+        }
+        // Get the input frame rate from the source
+        const double fpsIn =
+            mSources[i]->GetSourceFRateNum() / mSources[i]->GetSourceFRateDen();
+        const double frameDurationIn = 1.0 * 1000 / fpsIn;    // in milliseconds
+        const int frameDurationInInt = (int)frameDurationIn;  // in milliseconds
+
+        // Output current system timestamp (now)
+        uint64_t now =
+            std::chrono::system_clock::now().time_since_epoch().count();
+
+        // We want to be 2 frame behind the current frame in term of input
+        // frames
+        now -= (frameDurationInInt * 1000000);
+        // The NDI timestamp is in 100ns intervals
+        // The now timestamp is in ns intervals
+        std::cout << "Current system timestamp: " << now / 100 << std::endl;
+
+        // The 2 parameters are
+        // 1. The timestamp in 100ns intervals
+        // 2. The threshold in 100ns intervals
+        mSources[i]->GetVideoFrameAtTime(now / 100, frameDurationInInt * 10000);
       }
-      // Get the input frame rate from the source
-      const double fpsIn =
-          mSources[0]->GetSourceFRateNum() / mSources[0]->GetSourceFRateDen();
-      const double frameDurationIn = 1.0 * 1000 / fpsIn;    // in milliseconds
-      const int frameDurationInInt = (int)frameDurationIn;  // in milliseconds
-
-      // Output current system timestamp (now)
-      uint64_t now =
-          std::chrono::system_clock::now().time_since_epoch().count();
-
-      // We want to be 2 frame behind the current frame in term of input
-      // frames
-      now -= (frameDurationInInt * 1000000);
-      // The NDI timestamp is in 100ns intervals
-      // The now timestamp is in ns intervals
-      std::cout << "Current system timestamp: " << now / 100 << std::endl;
-
-      // The 2 parameters are
-      // 1. The timestamp in 100ns intervals
-      // 2. The threshold in 100ns intervals
-      mSources[0]->GetVideoFrameAtTime(now / 100, frameDurationInInt * 10000);
 
       std::this_thread::sleep_for(
           std::chrono::milliseconds(frameDurationOutInt));
     }
 
     // We need to stop all the sources only one for now
-    mSources[0]->Stop();
+    for (int i = 0; i < mSources.size(); i++) {
+      mSources[i]->Stop();
+    }
   }
 };
 

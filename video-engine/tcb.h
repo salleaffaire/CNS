@@ -118,17 +118,18 @@ class TimedCircularBuffer {
     // starting from the current read index
     int index = mCurrentRead;
     while (index < mCurrentWrite) {
-      std::cout << "mCurrentWrite: " << mCurrentWrite
-                << " | mCurrentRead: " << mCurrentRead << " | index: " << index
-                << std::endl;
+      // std::cout << "mCurrentWrite: " << mCurrentWrite
+      //           << " | mCurrentRead: " << mCurrentRead << " | index: " <<
+      //           index
+      //           << std::endl;
       // std::cout << "Buffer Timestamp: " << mBuffer[index % mSize].mTimestamp
       //           << std::endl;
       // std::cout << "Timestamp       : " << timestamp << std::endl;
       uint64_t diff = std::abs(int64_t(mBuffer[index % mSize].mTimestamp) -
                                int64_t(timestamp));
 
-      std::cout << "Diff: " << diff << " | Threshold: " << threshold
-                << std::endl;
+      // std::cout << "Diff: " << diff << " | Threshold: " << threshold
+      //           << std::endl;
       if (diff <= threshold) {
         mCurrentRead = index;
         std::cout << "ReadIndex: " << mCurrentRead << std::endl;

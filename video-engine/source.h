@@ -133,9 +133,9 @@ class Source {
           // Update the source frame rate
           mSourceFRateDen = video_frame.frame_rate_D;
           mSourceFRateNum = video_frame.frame_rate_N;
-          std::cout << "Source frame rate: "
-                    << (double)mSourceFRateNum / (double)mSourceFRateDen
-                    << std::endl;
+          // std::cout << "Source frame rate: "
+          //           << (double)mSourceFRateNum / (double)mSourceFRateDen
+          //           << std::endl;
           // Put the video frame in the buffer
           mBuffer.Put(video_frame, video_frame.timestamp);
           break;
