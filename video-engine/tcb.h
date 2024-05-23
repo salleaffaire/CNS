@@ -101,7 +101,7 @@ class TimedCircularBuffer {
     return;
   }
 
-  T Get(uint64_t timestamp, int threshold) {
+  T Get(uint64_t timestamp, int threshold, int* id, int* writeIndex) {
     // Check if is init or not
     if (!mBuffer) {
       std::cerr << "CircularBuffer is not initialized" << std::endl;
@@ -132,12 +132,14 @@ class TimedCircularBuffer {
       //           << std::endl;
       if (diff <= threshold) {
         mCurrentRead = index;
-        std::cout << "ReadIndex: " << mCurrentRead << std::endl;
+        // std::cout << "ReadIndex: " << mCurrentRead << std::endl;
         break;
       }
       index++;
     }
     // This will be wrong if we don't find any item within the threshold
+    *id = index;
+    *writeIndex = mCurrentWrite;
     return mBuffer[index % mSize].mItem;
   }
 

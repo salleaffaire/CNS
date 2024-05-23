@@ -42,8 +42,20 @@ class Source {
   int GetSourceFRateNum() { return mSourceFRateNum; }
 
   NDIlib_video_frame_v2_t GetVideoFrameAtTime(uint64_t timestamp,
-                                              uint64_t threshold) {
-    return mBuffer.Get(timestamp, threshold);
+                                              uint64_t threshold, int* index,
+                                              int* writeIndex) {
+    int index_ = 0;
+    int writeIndex_ = 0;
+    auto frame = mBuffer.Get(timestamp, threshold, &index_, &writeIndex_);
+
+    if (index) {
+      *index = index_;
+    }
+    if (writeIndex) {
+      *writeIndex = writeIndex_;
+    }
+
+    return frame;
   }
 
   // --------------------------------------------- Getters and setters

@@ -52,6 +52,14 @@ class Renderer {
     const int frameDurationOutInt = (int)frameDurationOut;  // in milliseconds
 
     while (mIsRunning) {
+      // Output current system timestamp (now)
+      uint64_t now =
+          std::chrono::system_clock::now().time_since_epoch().count();
+      // The NDI timestamp is in 100ns intervals
+      // The now timestamp is in ns intervals
+      std::cout << "Current system timestamp: " << now / 100 << std::endl;
+
+      // For all the sources
       for (int i = 0; i < mSources.size(); i++) {
         if (mSources[i]->GetSourceFRateDen() == 0) {
           std::cout << "Source frame rate not set" << std::endl;
@@ -63,21 +71,22 @@ class Renderer {
         const double frameDurationIn = 1.0 * 1000 / fpsIn;    // in milliseconds
         const int frameDurationInInt = (int)frameDurationIn;  // in milliseconds
 
-        // Output current system timestamp (now)
-        uint64_t now =
-            std::chrono::system_clock::now().time_since_epoch().count();
-
         // We want to be 2 frame behind the current frame in term of input
         // frames
-        now -= (frameDurationInInt * 1000000);
-        // The NDI timestamp is in 100ns intervals
-        // The now timestamp is in ns intervals
-        std::cout << "Current system timestamp: " << now / 100 << std::endl;
+        uint64_t targetTime = now - (2 * (frameDurationInInt * 1000000));
 
         // The 2 parameters are
         // 1. The timestamp in 100ns intervals
         // 2. The threshold in 100ns intervals
-        mSources[i]->GetVideoFrameAtTime(now / 100, frameDurationInInt * 10000);
+        int index = 0;
+        int writeIndex = 0;
+        auto frame = mSources[i]->GetVideoFrameAtTime(
+            targetTime / 100, frameDurationInInt * 10000, &index, &writeIndex);
+        std::cout << "Now : " << now / 100 << " | Target: " << targetTime / 100
+                  << " | Source TS: " << frame.timestamp
+                  << " | Diff:" << (targetTime / 100 - frame.timestamp)
+                  << " | Index: " << index << " | Write Index: " << writeIndex
+                  << std::endl;
       }
 
       std::this_thread::sleep_for(
