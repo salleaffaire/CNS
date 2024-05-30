@@ -76,7 +76,7 @@ int main() {
   // videoSource[1].Init((NDIlib_source_t*)&p_sources[selectedSourceIndex[1]]);
   // videoSource[1].Start();
 
-  Renderer renderer(60, 1);
+  Renderer renderer(30, 1);
   renderer.AddSource(&(videoSource[0]));
   // renderer.AddSource(&(videoSource[1]));
   renderer.Start();
