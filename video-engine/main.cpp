@@ -59,26 +59,26 @@ int main() {
   }
 
   std::cout << "Select a source index: ";
-  std::cin >> selectedSourceIndex[0];
+  std::cin >> selectedSourceIndex[1];
   // Check that the selected source index is valid
   if (selectedSourceIndex[1] > (NDISources.size() - 1)) {
     std::cout << "Invalid source index" << std::endl;
     return -1;
   }
 
-  std::cout << "Selected sources: " << selectedSourceIndex[0] << " and "
+  std::cout << "Selected sources: " << selectedSourceIndex[1] << " and "
             << selectedSourceIndex[1] << std::endl;
 
   Source videoSource[2];
   videoSource[0].Init((NDIlib_source_t*)&p_sources[selectedSourceIndex[0]]);
   videoSource[0].Start();
 
-  // videoSource[1].Init((NDIlib_source_t*)&p_sources[selectedSourceIndex[1]]);
-  // videoSource[1].Start();
+  videoSource[1].Init((NDIlib_source_t*)&p_sources[selectedSourceIndex[1]]);
+  videoSource[1].Start();
 
   Renderer renderer(30, 1);
   renderer.AddSource(&(videoSource[0]));
-  // renderer.AddSource(&(videoSource[1]));
+  renderer.AddSource(&(videoSource[1]));
   renderer.Start();
 
   // Ask for user input to stop the program, stop if the user enters 'q'

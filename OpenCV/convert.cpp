@@ -7,13 +7,13 @@ cv::Mat* Convert_NDIlib_video_frame_v2_t_to_CVMat(
   // Check if the frame is valid
   if (!p_ndi_frame) {
     std::cout << "Invalid frame" << std::endl;
-    return;
+    return nullptr;
   }
 
   // Check if the frame is BGRX
   if (p_ndi_frame->FourCC != NDIlib_FourCC_type_BGRA) {
     std::cout << "Frame format not supported" << std::endl;
-    return;
+    return nullptr;
   }
 
   // Dynamically create a CV::Mat object with the same dimensions as the NDI

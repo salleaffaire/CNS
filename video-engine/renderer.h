@@ -73,7 +73,7 @@ class Renderer {
 
         // We want to be 2 frame behind the current frame in term of input
         // frames
-        uint64_t targetTime = now - (2 * (frameDurationInInt * 1000000));
+        int64_t targetTime = now - (2 * (frameDurationInInt * 1000000));
 
         // The 2 parameters are
         // 1. The timestamp in 100ns intervals
