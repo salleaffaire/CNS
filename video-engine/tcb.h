@@ -133,19 +133,22 @@ class TimedCircularBuffer {
       if (diff <= threshold) {
         mCurrentRead = index;
         // std::cout << "ReadIndex: " << mCurrentRead << std::endl;
+        mBuffer[index % mSize].mIsLocked = true;
         break;
       }
       index++;
     }
+    // TODO
     // This will be wrong if we don't find any item within the threshold
     *id = index;
     *writeIndex = mCurrentWrite;
+
     return mBuffer[index % mSize].mItem;
   }
 
   void Unlock(int index) {
     std::unique_lock<std::mutex> lock(mMutex);
-    mBuffer[index].mIsLocked = false;
+    mBuffer[index % mSize].mIsLocked = false;
     mCond.notify_one();
   }
 

@@ -60,6 +60,7 @@ class Renderer {
       std::cout << "Current system timestamp: " << now / 100 << std::endl;
 
       // For all the sources
+      int index[mSources.size()];
       for (int i = 0; i < mSources.size(); i++) {
         if (mSources[i]->GetSourceFRateDen() == 0) {
           std::cout << "Source frame rate not set" << std::endl;
@@ -78,19 +79,26 @@ class Renderer {
         // The 2 parameters are
         // 1. The timestamp in 100ns intervals
         // 2. The threshold in 100ns intervals
-        int index = 0;
+        index[i] = 0;
         int writeIndex = 0;
         auto frame = mSources[i]->GetVideoFrameAtTime(
-            targetTime / 100, frameDurationInInt * 10000, &index, &writeIndex);
+            targetTime / 100, frameDurationInInt * 10000, &(index[i]),
+            &writeIndex);
         std::cout << "Now : " << now / 100 << " | Target: " << targetTime / 100
                   << " | Source TS: " << frame.timestamp
                   << " | Diff:" << (targetTime / 100 - frame.timestamp)
-                  << " | Index: " << index << " | Write Index: " << writeIndex
-                  << std::endl;
+                  << " | Index: " << index[i]
+                  << " | Write Index: " << writeIndex << std::endl;
       }
 
+      // This sleep similates processing time
       std::this_thread::sleep_for(
           std::chrono::milliseconds(frameDurationOutInt));
+
+      // Unlock both the sources
+      for (int i = 0; i < mSources.size(); i++) {
+        mSources[i]->ReleaseVideoFrame(index[i]);
+      }
     }
 
     // We need to stop all the sources only one for now

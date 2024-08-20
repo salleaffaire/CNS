@@ -58,6 +58,9 @@ class Source {
     return frame;
   }
 
+  // When Releasing we use the non-modulo index
+  void ReleaseVideoFrame(int index) { mBuffer.Unlock(index); }
+
   // --------------------------------------------- Getters and setters
 
  private:
