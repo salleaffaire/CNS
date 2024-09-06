@@ -7,17 +7,17 @@
 
 #include "source.h"
 
-class Renderer {
+class RendererBase {
  public:
-  Renderer(int rendererFRateNum, int rendererFRateDen)
+  RendererBase(int rendererFRateNum, int rendererFRateDen)
       : mIsRunning(false),
         mRendererFRateNum(rendererFRateNum),
         mRendererFRateDen(rendererFRateDen) {}
-  virtual ~Renderer() {}
+  virtual ~RendererBase() {}
 
   void Start() {
     mIsRunning = true;
-    mThread = std::thread(&Renderer::Run, this);
+    mThread = std::thread(&RendererBase::Run, this);
   }
 
   void Stop() {
@@ -27,14 +27,17 @@ class Renderer {
 
   void AddSource(Source* source) { mSources.push_back(source); }
 
+  void virtual Process(std::vector<NDIlib_video_frame_v2_t>) = 0;
+
+ protected:
+  std::vector<Source*> mSources;
+
  private:
   std::thread mThread;
 
   int mRendererFRateDen, mRendererFRateNum;
 
   bool mIsRunning;
-
-  std::vector<Source*> mSources;
 
   // Assume only one source for now
   void Run() {
@@ -53,14 +56,17 @@ class Renderer {
 
     while (mIsRunning) {
       // Output current system timestamp (now)
-      uint64_t now =
+      uint64_t nowBeforeProcessing =
           std::chrono::system_clock::now().time_since_epoch().count();
       // The NDI timestamp is in 100ns intervals
       // The now timestamp is in ns intervals
-      std::cout << "Current system timestamp: " << now / 100 << std::endl;
+      std::cout << "Current system timestamp: " << nowBeforeProcessing / 100
+                << std::endl;
 
       // For all the sources
       int index[mSources.size()];
+      std::vector<NDIlib_video_frame_v2_t> frames(mSources.size());
+
       for (int i = 0; i < mSources.size(); i++) {
         if (mSources[i]->GetSourceFRateDen() == 0) {
           std::cout << "Source frame rate not set" << std::endl;
@@ -74,7 +80,8 @@ class Renderer {
 
         // We want to be 2 frame behind the current frame in term of input
         // frames
-        int64_t targetTime = now - (2 * (frameDurationInInt * 1000000));
+        int64_t targetTime =
+            nowBeforeProcessing - (2 * (frameDurationInInt * 1000000));
 
         // The 2 parameters are
         // 1. The timestamp in 100ns intervals
@@ -84,16 +91,32 @@ class Renderer {
         auto frame = mSources[i]->GetVideoFrameAtTime(
             targetTime / 100, frameDurationInInt * 10000, &(index[i]),
             &writeIndex);
-        std::cout << "Now : " << now / 100 << " | Target: " << targetTime / 100
+        frames[i] = frame;
+        std::cout << "Now : " << nowBeforeProcessing / 100
+                  << " | Target: " << targetTime / 100
                   << " | Source TS: " << frame.timestamp
                   << " | Diff:" << (targetTime / 100 - frame.timestamp)
                   << " | Index: " << index[i]
                   << " | Write Index: " << writeIndex << std::endl;
       }
 
-      // This sleep similates processing time
+      // Process the frame
+      Process(frames);
+
+      uint64_t nowAfterProcessing =
+          std::chrono::system_clock::now().time_since_epoch().count();
+
+      // nowAfterProcessing minus nowBeforeProcessing in milliseconds
+      double processingTime =
+          (double(nowAfterProcessing) - double(nowBeforeProcessing)) /
+          double(1000000);
+      int processingTimeInt = (int)processingTime;
+
+      // std::cout << "Processing time: " << processingTime << std::endl;
+
+      // Wait for the remaining time (frameDurationOut - processingTime)
       std::this_thread::sleep_for(
-          std::chrono::milliseconds(frameDurationOutInt));
+          std::chrono::milliseconds(frameDurationOutInt - processingTimeInt));
 
       // Unlock both the sources
       for (int i = 0; i < mSources.size(); i++) {

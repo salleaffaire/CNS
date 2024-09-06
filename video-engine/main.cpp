@@ -4,7 +4,7 @@
 #include <string>
 
 #include "Processing.NDI.Lib.h"
-#include "renderer.h"
+#include "renderer-passthrough-ndi.h"
 #include "source.h"
 
 int main() {
@@ -34,52 +34,50 @@ int main() {
   std::cout << "Number of sources: " << no_sources << std::endl;
 
   // Clear the name list
-  std::list<std::string> NDISources;
-  NDISources.clear();
+  std::list<std::string> ndiSourceNames;
+  ndiSourceNames.clear();
 
   for (uint32_t i = 0; i < no_sources; i++)
-    NDISources.push_back(p_sources[i].p_ndi_name);
+    ndiSourceNames.push_back(p_sources[i].p_ndi_name);
 
   // Lists all the sources
   int sourceIndex = 0;
-  for (std::list<std::string>::iterator it = NDISources.begin();
-       it != NDISources.end(); it++) {
+  for (std::list<std::string>::iterator it = ndiSourceNames.begin();
+       it != ndiSourceNames.end(); it++) {
     std::cout << sourceIndex++ << " : " << *it << std::endl;
   }
 
-  // Select a source index
-  int selectedSourceIndex[2] = {0, 0};
-  std::cout << "Select a source index: ";
-  std::cin >> selectedSourceIndex[0];
+  std::list<Source*> sources;
+  while (true) {
+    std::string selectedSourceIndex;
+    std::cout << "Select a source index or (q) to quit: ";
+    std::cin >> selectedSourceIndex;
+    if (selectedSourceIndex == "q") {
+      break;
+    }
+    sourceIndex = std::stoi(selectedSourceIndex);
 
-  // Check that the selected source index is valid
-  if (selectedSourceIndex[0] > (NDISources.size() - 1)) {
-    std::cout << "Invalid source index" << std::endl;
-    return -1;
+    Source* videoSource = new Source();
+    videoSource->Init((NDIlib_source_t*)&p_sources[sourceIndex]);
+    sources.push_back(videoSource);
   }
 
-  std::cout << "Select a source index: ";
-  std::cin >> selectedSourceIndex[1];
-  // Check that the selected source index is valid
-  if (selectedSourceIndex[1] > (NDISources.size() - 1)) {
-    std::cout << "Invalid source index" << std::endl;
-    return -1;
+  // Start the sources
+  for (std::list<Source*>::iterator it = sources.begin(); it != sources.end();
+       it++) {
+    (*it)->Start();
   }
 
-  std::cout << "Selected sources: " << selectedSourceIndex[1] << " and "
-            << selectedSourceIndex[1] << std::endl;
+  RendererBase* renderer = new RendererPassthroughNDI(15, 1, "Video Engine");
 
-  Source videoSource[2];
-  videoSource[0].Init((NDIlib_source_t*)&p_sources[selectedSourceIndex[0]]);
-  videoSource[0].Start();
+  // Add the sources to the renderer
+  for (std::list<Source*>::iterator it = sources.begin(); it != sources.end();
+       it++) {
+    renderer->AddSource(*it);
+  }
 
-  videoSource[1].Init((NDIlib_source_t*)&p_sources[selectedSourceIndex[1]]);
-  videoSource[1].Start();
-
-  Renderer renderer(30, 1);
-  renderer.AddSource(&(videoSource[0]));
-  renderer.AddSource(&(videoSource[1]));
-  renderer.Start();
+  // Start the renderer
+  renderer->Start();
 
   // Ask for user input to stop the program, stop if the user enters 'q'
   char c;
@@ -91,7 +89,7 @@ int main() {
   }
 
   // Stop the renderer
-  renderer.Stop();
+  renderer->Stop();
 
   // Destroy the NDI finder. We needed to have access to the pointers to
   // p_sources[0]
@@ -99,6 +97,15 @@ int main() {
 
   // Not required, but nice
   NDIlib_destroy();
+
+  // Delete the sources
+  for (std::list<Source*>::iterator it = sources.begin(); it != sources.end();
+       it++) {
+    delete *it;
+  }
+
+  // Delete the renderer
+  delete renderer;
 
   return 0;
 }

@@ -9,16 +9,16 @@
 template <typename T>
 class Element {
  public:
-  Element() : mItem(), mTimestamp(-1), mIsSet(false), mIsLocked(false) {}
-  Element(T item, uint64_t timestamp, bool isSet, bool isLocked = false)
+  Element() : mItem(), mTimestamp(-1), mIsSet(false), mIsLockedTimes(0) {}
+  Element(T item, uint64_t timestamp, bool isSet, bool isLockedTimes = 0)
       : mItem(item),
         mTimestamp(timestamp),
         mIsSet(isSet),
-        mIsLocked(isLocked) {}
+        mIsLockedTimes(isLockedTimes) {}
   T mItem;
   uint64_t mTimestamp;
   bool mIsSet;
-  bool mIsLocked;
+  int mIsLockedTimes;
 };
 
 // Overload the << operator for the Element class
@@ -82,8 +82,9 @@ class TimedCircularBuffer {
     std::unique_lock<std::mutex> lock(mMutex);
 
     // Wait until the element is unlocked
-    mCond.wait(lock,
-               [this] { return !mBuffer[mCurrentWrite % mSize].mIsLocked; });
+    mCond.wait(lock, [this] {
+      return (mBuffer[mCurrentWrite % mSize].mIsLockedTimes == 0);
+    });
 
     // Write index
     const int index = mCurrentWrite % mSize;
@@ -117,6 +118,7 @@ class TimedCircularBuffer {
     // Find the index of the item within the threshold of the timestamp
     // starting from the current read index
     int index = mCurrentRead;
+    int frameFound = 0;
     while (index < mCurrentWrite) {
       // std::cout << "mCurrentWrite: " << mCurrentWrite
       //           << " | mCurrentRead: " << mCurrentRead << " | index: " <<
@@ -133,10 +135,16 @@ class TimedCircularBuffer {
       if (diff <= threshold) {
         mCurrentRead = index;
         // std::cout << "ReadIndex: " << mCurrentRead << std::endl;
-        mBuffer[index % mSize].mIsLocked = true;
+        // Increment the lock count
+        mBuffer[index % mSize].mIsLockedTimes++;
+        frameFound = 1;
         break;
       }
       index++;
+    }
+
+    if (!frameFound) {
+      std::cout << "Frame not found" << std::endl;
     }
     // TODO
     // This will be wrong if we don't find any item within the threshold
@@ -148,7 +156,11 @@ class TimedCircularBuffer {
 
   void Unlock(int index) {
     std::unique_lock<std::mutex> lock(mMutex);
-    mBuffer[index % mSize].mIsLocked = false;
+    // Decrement the lock count if it is not zero, protects against calling
+    // Unlock multiple times
+    if (mBuffer[index % mSize].mIsLockedTimes != 0) {
+      mBuffer[index % mSize].mIsLockedTimes--;
+    }
     mCond.notify_one();
   }
 
