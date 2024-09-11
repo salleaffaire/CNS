@@ -8,10 +8,9 @@
 #include "source.h"
 
 class RendererBase {
- public:
+public:
   RendererBase(int rendererFRateNum, int rendererFRateDen)
-      : mIsRunning(false),
-        mRendererFRateNum(rendererFRateNum),
+      : mIsRunning(false), mRendererFRateNum(rendererFRateNum),
         mRendererFRateDen(rendererFRateDen) {}
   virtual ~RendererBase() {}
 
@@ -25,18 +24,16 @@ class RendererBase {
     mThread.join();
   }
 
-  void AddSource(Source* source) { mSources.push_back(source); }
+  void AddSource(Source *source) { mSources.push_back(source); }
 
   void virtual Process(std::vector<NDIlib_video_frame_v2_t>) = 0;
 
- protected:
-  std::vector<Source*> mSources;
-
- private:
-  std::thread mThread;
-
+protected:
+  std::vector<Source *> mSources;
   int mRendererFRateDen, mRendererFRateNum;
 
+private:
+  std::thread mThread;
   bool mIsRunning;
 
   // Assume only one source for now
@@ -51,8 +48,8 @@ class RendererBase {
     // Simulate a renderering loop
     // Frame per second
     const double fpsOut = mRendererFRateNum / mRendererFRateDen;
-    const double frameDurationOut = 1.0 * 1000 / fpsOut;    // in milliseconds
-    const int frameDurationOutInt = (int)frameDurationOut;  // in milliseconds
+    const double frameDurationOut = 1.0 * 1000 / fpsOut;   // in milliseconds
+    const int frameDurationOutInt = (int)frameDurationOut; // in milliseconds
 
     while (mIsRunning) {
       // Output current system timestamp (now)
@@ -75,8 +72,8 @@ class RendererBase {
         // Get the input frame rate from the source
         const double fpsIn =
             mSources[i]->GetSourceFRateNum() / mSources[i]->GetSourceFRateDen();
-        const double frameDurationIn = 1.0 * 1000 / fpsIn;    // in milliseconds
-        const int frameDurationInInt = (int)frameDurationIn;  // in milliseconds
+        const double frameDurationIn = 1.0 * 1000 / fpsIn;   // in milliseconds
+        const int frameDurationInInt = (int)frameDurationIn; // in milliseconds
 
         // We want to be 2 frame behind the current frame in term of input
         // frames
@@ -131,4 +128,4 @@ class RendererBase {
   }
 };
 
-#endif  // RENDERER_HPP___
+#endif // RENDERER_HPP___

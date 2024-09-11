@@ -1,5 +1,5 @@
 CXXFLAGS = -g -std=c++17 -I ../../NDI_SDK/include
-LDLIBS = -L ../../NDI_SDK/lib/x86_64-linux-gnu -lndi -pthread -lncurses
+LDLIBS = -L ../../NDI_SDK/lib/x86_64-linux-gnu -lndi -pthread
 
 PRGM  = NDI-Send-Video
 SRCS := $(wildcard *.cpp)

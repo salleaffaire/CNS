@@ -8,6 +8,13 @@
 #include "source.h"
 
 int main() {
+
+  // All parameters are hardcoded for now
+  std::string ndiOutputName = "Video Engine";
+  int rendererFRateNum = 15;
+  int rendererFRateDen = 1;
+  int frameDelays = 2;
+
   std::cout << "Starting Video Engine ..." << std::endl;
 
   // Discovering NDI sources
@@ -28,7 +35,7 @@ int main() {
   }
 
   uint32_t no_sources = 0;
-  const NDIlib_source_t* p_sources =
+  const NDIlib_source_t *p_sources =
       NDIlib_find_get_current_sources(pNDI_find, &no_sources);
 
   std::cout << "Number of sources: " << no_sources << std::endl;
@@ -47,7 +54,7 @@ int main() {
     std::cout << sourceIndex++ << " : " << *it << std::endl;
   }
 
-  std::list<Source*> sources;
+  std::list<Source *> sources;
   while (true) {
     std::string selectedSourceIndex;
     std::cout << "Select a source index or (q) to quit: ";
@@ -57,21 +64,22 @@ int main() {
     }
     sourceIndex = std::stoi(selectedSourceIndex);
 
-    Source* videoSource = new Source();
-    videoSource->Init((NDIlib_source_t*)&p_sources[sourceIndex]);
+    Source *videoSource = new Source();
+    videoSource->Init((NDIlib_source_t *)&p_sources[sourceIndex]);
     sources.push_back(videoSource);
   }
 
   // Start the sources
-  for (std::list<Source*>::iterator it = sources.begin(); it != sources.end();
+  for (std::list<Source *>::iterator it = sources.begin(); it != sources.end();
        it++) {
     (*it)->Start();
   }
 
-  RendererBase* renderer = new RendererPassthroughNDI(15, 1, "Video Engine");
+  RendererBase *renderer = new RendererPassthroughNDI(
+      rendererFRateNum, rendererFRateDen, ndiOutputName);
 
   // Add the sources to the renderer
-  for (std::list<Source*>::iterator it = sources.begin(); it != sources.end();
+  for (std::list<Source *>::iterator it = sources.begin(); it != sources.end();
        it++) {
     renderer->AddSource(*it);
   }
@@ -99,7 +107,7 @@ int main() {
   NDIlib_destroy();
 
   // Delete the sources
-  for (std::list<Source*>::iterator it = sources.begin(); it != sources.end();
+  for (std::list<Source *>::iterator it = sources.begin(); it != sources.end();
        it++) {
     delete *it;
   }

@@ -5,13 +5,13 @@
 #include "renderer-base.h"
 
 class RendererPassthroughNDI : public RendererBase {
- public:
+public:
   RendererPassthroughNDI(int rendererFRateNum, int rendererFRateDen,
                          std::string ndiSourceName)
       : RendererBase(rendererFRateNum, rendererFRateDen),
         mNDISourceName(ndiSourceName) {
     NDIlib_send_create_t NDI_send_create_desc;
-    NDI_send_create_desc.p_ndi_name = nullptr;
+    NDI_send_create_desc.p_ndi_name = mNDISourceName.c_str();
     NDI_send_create_desc.p_groups = nullptr;
     // NDI_send_create_desc.clock_video = true;
     // NDI_send_create_desc.clock_audio = false;
@@ -29,14 +29,18 @@ class RendererPassthroughNDI : public RendererBase {
   }
 
   void Process(std::vector<NDIlib_video_frame_v2_t> frames) override {
+
     for (auto frame : frames) {
+      // Update the frame rate
+      frame.frame_rate_N = mRendererFRateNum;
+      frame.frame_rate_D = mRendererFRateDen;
       NDIlib_send_send_video_v2(mNDISender, &frame);
     }
   }
 
- private:
+private:
   NDIlib_send_instance_t mNDISender;
   std::string mNDISourceName;
 };
 
-#endif  // RENDERED_PASSTHROUGH_NDI_HPP___
+#endif // RENDERED_PASSTHROUGH_NDI_HPP___

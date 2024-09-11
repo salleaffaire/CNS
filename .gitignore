@@ -1,5 +1,7 @@
 NDI_SDK
 ve
+NDI-Send-Video
 *.o
 *.a
 *.d
+Access_Manager

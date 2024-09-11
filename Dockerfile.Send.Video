@@ -1,0 +1,14 @@
+FROM ubuntu:22.04
+
+WORKDIR /app
+
+RUN apt update && apt install -y libavahi-client3 libncurses5-dev
+
+COPY NDI_SDK/ /app/NDI_SDK/
+COPY NDIConfig/ndi-config.v1.obs-ndi.json /root/.ndi/ndi-config.v1.json
+COPY video-engine/Tests/NDI-Send-Video /app/NDI-Send-Video
+
+ENV LD_LIBRARY_PATH=/app/NDI_SDK/lib/x86_64-linux-gnu
+
+CMD ["./NDI-Send-Video"]
+

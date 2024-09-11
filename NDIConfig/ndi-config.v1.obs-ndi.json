@@ -20,8 +20,8 @@
       }
     },
     "networks": {
-      "discovery": "",
-      "ips": "172.24.240.1"
+      "discovery": "directory-service",
+      "ips": ""
     },
     "rudp": {
       "recv": {

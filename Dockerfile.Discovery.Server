@@ -1,0 +1,7 @@
+FROM ubuntu:22.04
+
+WORKDIR /app
+
+COPY ./NDI_SDK/bin/x86_64-linux-gnu/ndi-directory-service /app/ndi-directory-service
+
+CMD ["./ndi-directory-service"] 

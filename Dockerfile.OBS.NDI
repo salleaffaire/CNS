@@ -1,0 +1,7 @@
+FROM daedilus1/docker-obs-ndi:latest
+
+WORKDIR /app
+
+COPY NDIConfig/ndi-config.v1.obs-ndi.json /root/.ndi/ndi-config.v1.json
+
+
